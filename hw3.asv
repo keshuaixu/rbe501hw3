@@ -58,8 +58,8 @@ x_dot_numeric_deg(4:6,:) = rad2deg(x_dot_numeric_deg(4:6,:));
 x_dot_numeric_deg % mm, deg/s
 
 %% 4c
-F_numeric = [50; 0; 0; 0; 0; 0]; % N, N*mm
-joint_torque = J_numeric'*F_numeric;
+F_numeric = [50; 0; 0; 0; 0; 0] % N, N*mm
+joint_torque = J_numeric\F_numeric;
 
 %ans
 double(joint_torque) % N*mm
