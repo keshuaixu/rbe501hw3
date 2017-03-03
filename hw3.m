@@ -140,12 +140,24 @@ T_W_T_numeric = subs(T_W_T_numeric, [a, r], [507, 143]);
 T_W_T_numeric = subs(T_W_T_numeric, x_base, [2000; 1000; 0; 0; 0; sym(pi)/4]);
 double(T_W_T_numeric)
 
-
 %% 11
-% xi_0_dot [xdot;ydot;wzdot]
+
+x_t_w = T_W_T * [0; 0; 0; 1];
+J_arm_w_top = jacobian(x_t_w(1:3,:) , theta);
+
+slice_zvect = @(m) m(1:3,3);
+z_vect = sym(zeros(3,3));
+z_vect(:,1) = slice_zvect(T_W_R*T(:,:,1)*T(:,:,2));
+z_vect(:,2) = slice_zvect(T_W_R*T(:,:,1)*T(:,:,2)*T(:,:,3));
+z_vect(:,3) = slice_zvect(T_W_R*T(:,:,1)*T(:,:,2)*T(:,:,3)*T(:,:,4));
+J_arm_w_bottom = z_vect(1:3,:);
+
+J_arm_w = vertcat(J_arm_w_top, J_arm_w_bottom);
+
 xi_0_dot_full = [xi_0_dot(1:2,:); zeros(3,1); xi_0_dot(3,:)];
 J_base = jacobian(xi_0_dot_full, phi_dot(1:2));
-J = horzcat(J_arm, J_base)
+
+J = horzcat(J_arm_w, J_base)
 
 % TODO: matrix-vector equation
 
