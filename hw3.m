@@ -1,16 +1,16 @@
 %% 1
-% TODO: add frames picz
+% TODO: add frames sym(pi)cz
 
 theta = sym('theta', [3 1]);
 syms a b c d e f g;
 
 % ans
 % columns: theta d a alpha
-dh = [0, d + b, -c, -pi/2; % FR->F0
-    theta(1) - pi/2, 0, e, 0; % F1
+dh = [0, d + b, -c, -sym(pi)/2; % FR->F0
+    theta(1) - sym(pi)/2, 0, e, 0; % F1
     theta(2), 0, f, 0; % F2
     theta(3), 0, g, 0; % F3
-    -pi/2, 0, 0, -pi/2] % FT
+    -sym(pi)/2, 0, 0, -sym(pi)/2] % FT
 
 %% 2
 
@@ -37,7 +37,7 @@ J_reduced_dof = J([1 3 5], :)
 %% 4a
 T_R_T_numeric = subs(T_R_T, [b, c, d, e, f, g], ...
                 [361, 250, 380, 328, 323, 82.4]);
-T_R_T_numeric = subs(T_R_T_numeric, theta, [pi/3; pi/2; pi/3]);
+T_R_T_numeric = subs(T_R_T_numeric, theta, [sym(pi)/3; sym(pi)/2; sym(pi)/3]);
 
 % ans
 double(T_R_T_numeric)
@@ -46,9 +46,9 @@ double(T_R_T_numeric)
 
 J_numeric = subs(J, [b, c, d, e, f, g], ...
                 [361, 250, 380, 328, 323, 82.4]); % mm
-J_numeric = subs(J_numeric, theta, [pi/3; pi/2; pi/3]); % rad
+J_numeric = subs(J_numeric, theta, [sym(pi)/3; sym(pi)/2; sym(pi)/3]); % rad
 
-q_dot_numeric = [pi/4; pi/4; pi/4]; % rad/s
+q_dot_numeric = [sym(pi)/4; sym(pi)/4; sym(pi)/4]; % rad/s
 x_dot_numeric = J_numeric * q_dot_numeric; % mm, rad/s
 
 x_dot_numeric_deg = double(x_dot_numeric);
@@ -71,8 +71,8 @@ syms theta_base r;
 phi_dot = sym('phi_dot', [4,1]); %left right omni_big omni_small
 
 
-alpha = [pi/2; -pi/2; pi];
-beta = [0; pi; -pi/2];
+alpha = [sym(pi)/2; -sym(pi)/2; sym(pi)];
+beta = [0; sym(pi); -sym(pi)/2];
 l = [0.5*a; 0.5*a; c];
 
 % equations stolen from lecture slides
@@ -104,9 +104,25 @@ C2_sliding = ...
 rank([J1_rolling;C1_sliding])
 
 %% 7
+left_hand_side = [J1_rolling;C1_sliding]
+right_hand_side = [J2_rolling.*phi_dot(1:3);C2_sliding]
+
+% remove non-linearly-independent or non controllable equations
+% We are not removing them. We just don't need them -Chan
+left_hand_side = left_hand_side([1,2,4],:)
+right_hand_side = right_hand_side([1,2,4],:)
 
 
-xi_0_dot = R_rob_0(theta_base)\[J1_rolling;C1_sliding]\[J2_rolling.*phi_dot(1:3);C2_sliding]
+% xi_0_dot = R_rob_0(theta_base)\left_hand_side\right_hand_side
+xi_0_dot = inv(R_rob_0(theta_base))*inv(left_hand_side)*right_hand_side
+
+%% 8
+xi_0_dot_numeric = subs(xi_0_dot, [a, r, theta_base], [507, 143, sym(pi)/4]);
+xi_0_dot_numeric = subs(xi_0_dot_numeric, phi_dot, [2*sym(pi);4*sym(pi);0;0]);
+% ans
+double(xi_0_dot_numeric) % mm/s rad/s
+
+
 
 
 
