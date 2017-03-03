@@ -61,13 +61,52 @@ x_dot_numeric_deg % mm, deg/s
 F_numeric = [50; 0; 0; 0; 0; 0]; % N, N*mm
 joint_torque = J_numeric'*F_numeric;
 
-%ans
+% ans
 double(joint_torque) % N*mm
 
-% TODO: does not look right
 
 %% 
+syms theta_base r;
+% xi_dot = sym('xi_dot', [3 1]); % x_dot y_dot theta_dot
+phi_dot = sym('phi_dot', [4,1]); %left right omni_big omni_small
 
+
+alpha = [pi/2; -pi/2; pi];
+beta = [0; pi; -pi/2];
+l = [0.5*a; 0.5*a; c];
+
+% equations stolen from lecture slides
+% left hand side vectors
+R_rob_0 = @(th) [cos(th), sin(th), 0; -sin(th), cos(th), 0; 0, 0, 1];
+cons_fixed_roll = @(a, b, l) [sin(a+b), -cos(a+b), -l*cos(b)];
+cons_fixed_slide = @(a, b, l) [cos(a+b), sin(a+b), -l*sin(b)];
+cons_omni_roll = @(a, b, l) [sin(a+b), -cos(a+b), -l*cos(b)];
+cons_omni_slide = @(a, b, l) [cos(a+b), sin(a+b), l*sin(b)];
+J1_rolling = ...
+    [cons_fixed_roll(alpha(1), beta(1), l(1)); % left roll
+    cons_fixed_roll(alpha(2), beta(2), l(2)); % right roll
+    cons_omni_roll(alpha(3), beta(3), l(3))] % omni roll
+C1_sliding = ...
+    [cons_fixed_slide(alpha(1), beta(1), l(1)); % left slide
+    cons_fixed_slide(alpha(2), beta(2), l(2)); % right slide
+    cons_omni_slide(alpha(3), beta(3), l(3))] % omni slide
+
+J2_rolling = ...
+    [r;
+    r;
+    r]
+C2_sliding = ...
+    [0;
+    0;
+    r*phi_dot(4)]
+
+%% 6
+rank([J1_rolling;C1_sliding])
+
+%% 7
+
+
+xi_0_dot = R_rob_0(theta_base)\[J1_rolling;C1_sliding]\[J2_rolling.*phi_dot(1:3);C2_sliding]
 
 
 
