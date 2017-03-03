@@ -37,7 +37,7 @@ J_reduced_dof = J([1 3 5], :)
 %% 4a
 T_R_T_numeric = subs(T_R_T, [b, c, d, e, f, g], ...
                 [361, 250, 380, 328, 323, 82.4]);
-T_R_T_numeric = subs(T_R_T_numeric, theta, [sym(pi)/3; sym(pi)/2; sym(pi)/3]);
+T_R_T_numeric = subs(T_R_T_numeric, theta, [sym(pi)/6; sym(pi)/2; sym(pi)/6]);
 
 % ans
 double(T_R_T_numeric)
@@ -67,7 +67,6 @@ double(joint_torque) % N*mm
 
 %% 
 syms theta_base r;
-% xi_dot = sym('xi_dot', [3 1]); % x_dot y_dot theta_dot
 phi_dot = sym('phi_dot', [4,1]); %left right omni_big omni_small
 
 
@@ -117,8 +116,43 @@ right_hand_side = right_hand_side([1,2,4],:)
 xi_0_dot = inv(R_rob_0(theta_base))*inv(left_hand_side)*right_hand_side
 
 %% 8
-xi_0_dot_numeric = subs(xi_0_dot, [a, r, theta_base], [507, 143, pi/4]);
-xi_0_dot_numeric = subs(xi_0_dot_numeric, phi_dot, [2*pi;4*pi;0;0])
+xi_0_dot_numeric = subs(xi_0_dot, [a, r, theta_base], [507, 143, sym(pi)/4]);
+xi_0_dot_numeric = subs(xi_0_dot_numeric, phi_dot, [2*sym(pi);4*sym(pi);0;0]);
+% ans
+double(xi_0_dot_numeric) % mm/s rad/s
+
+%% 9
+% position of F_r wrt F_w [x;y;z;wx;wy;wz]
+x_base = sym('x_base', [6,1]);
+
+T_W_R = [[inv(R_rob_0(x_base(6))),[x_base(1);x_base(2);0]];[0,0,0,1]];
+
+T_W_T = T_W_R * T_R_T;
+
+T_W_T = simplify(T_W_T)
+
+%% 10
+
+T_W_T_numeric = subs(T_W_T, [b, c, d, e, f, g], ...
+                [361, 250, 380, 328, 323, 82.4]);
+T_W_T_numeric = subs(T_W_T_numeric, theta, [sym(pi)/6; sym(pi)/2; sym(pi)/6]);
+T_W_T_numeric = subs(T_W_T_numeric, [a, r], [507, 143]);
+T_W_T_numeric = subs(T_W_T_numeric, x_base, [2000; 1000; 0; 0; 0; sym(pi)/4]);
+double(T_W_T_numeric)
+
+
+%% 11
+% xi_0_dot [xdot;ydot;wzdot]
+xi_0_dot_full = [xi_0_dot(1:2,:); zeros(3,1); xi_0_dot(3,:)]
+
+
+
+
+
+
+
+
+
 
 
 
